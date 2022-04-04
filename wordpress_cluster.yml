@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8-oracle
+    networks: 
+      - wordpress_cluster
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 3v5xYCp3GUpVTGQj
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: hcQeh3sUPJBvehgp
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  haproxy:
+    image: haproxy-wordpress:1.8
+    networks: 
+      - wordpress_cluster
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  wordpress:
+    image: wordpress:latest
+    networks: 
+      - wordpress_cluster
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: hcQeh3sUPJBvehgp
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_TABLE_PREFIX: wp_
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+networks:
+  wordpress_cluster:
+    driver: overlay
+    attachable: true
+
+volumes:
+    db_data:
