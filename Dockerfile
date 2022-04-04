@@ -1,6 +1,7 @@
 FROM haproxy:2.5
 
-RUN apt update -y && apt install bash ca-certificates rsyslog cron -y
+USER root
+RUN apt-get update -y && apt-get install bash ca-certificates rsyslog cron -y
 RUN mkdir -p /etc/rsyslog.d/ &&  \
         touch /var/log/haproxy.log &&  \
         ln -sf /dev/stdout /var/log/haproxy.log
